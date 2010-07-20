@@ -44,6 +44,7 @@ import javax.mail.*;
 import javax.mail.internet.*;
 
 import org.binarystor.tools.osrecorder.freebsd.FreeBSDRecorder;
+import org.binarystor.tools.osrecorder.windows.WindowsRecorder;
 
 import org.ho.yaml.*;
 import org.ho.yaml.exception.YamlException;

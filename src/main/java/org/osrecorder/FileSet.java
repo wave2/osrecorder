@@ -31,10 +31,10 @@ package org.osrecorder;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import org.osrecorder.config.FileSetConfig;
 
 /**
@@ -55,6 +55,78 @@ public class FileSet {
     }
 
     /**
+     * Check include entries and return clean list
+     *
+     * @param  includes Array of include entries
+     * 
+     * @return Clean list of includes
+     */
+    public ArrayList<String> processIncludes(String[] includes) {
+        ArrayList<String> expandedIncludes = new ArrayList<String>();
+        for (String include : includes) {
+            File includePath = new File(include);
+            if (includePath.getName().contains("*")) {
+                //Process wildcards
+                File includeGlob = new File(includePath.getParent());
+                for (File file : includeGlob.listFiles()) {
+                    if (file.isFile()) {
+                        //Only store unique files
+                        if (!expandedIncludes.contains(file.getAbsolutePath())) {
+                            expandedIncludes.add(file.getAbsolutePath());
+                        }
+                    }
+                }
+            } else {
+                //Process only files
+                if (includePath.isFile()) {
+                    //Only store unique files
+                    if (!expandedIncludes.contains(includePath.getAbsolutePath())) {
+                        expandedIncludes.add(includePath.getAbsolutePath());
+                    }
+                }
+            }
+        }
+        return expandedIncludes;
+    }
+
+    /**
+     * Check exclude entries and return clean list
+     *
+     * @param  excludes Array of exclude entries
+     * 
+     * @return Clean list of excludes
+     */
+    public ArrayList<String> processExcludes(String[] excludes) {
+        ArrayList<String> expandedExcludes = new ArrayList<String>();
+        if (excludes != null){
+        for (String exclude : excludes) {
+            File excludePath = new File(exclude);
+            if (excludePath.getName().contains("*")) {
+                //Process wildcards
+                File excludeGlob = new File(excludePath.getParent());
+                for (File file : excludeGlob.listFiles()) {
+                    if (file.isFile()) {
+                        //Only store unique files
+                        if (!expandedExcludes.contains(file.getAbsolutePath())) {
+                            expandedExcludes.add(file.getAbsolutePath());
+                        }
+                    }
+                }
+            } else {
+                //Process only files
+                if (excludePath.isFile()) {
+                    //Only store unique files
+                    if (!expandedExcludes.contains(excludePath.getAbsolutePath())) {
+                        expandedExcludes.add(excludePath.getAbsolutePath());
+                    }
+                }
+            }
+        }
+        }
+        return expandedExcludes;
+    }
+
+    /**
      * Check for modifications and store / report changes
      *
      * @param   fileSetConfig   FileSet configuration
@@ -62,8 +134,11 @@ public class FileSet {
     public String processFileSet(FileSetConfig fileSetConf) {
         String result = "";
         boolean filesModified = false;
-        String[] includes = fileSetConf.getInclude();
+        ArrayList<String> includes = processIncludes(fileSetConf.getInclude());
+        ArrayList<String> excludes = processExcludes(fileSetConf.getExclude());
+        includes.removeAll(excludes);
         for (String include : includes) {
+            System.out.println(include);
             //Create file objects for source and destination
             File sourceFile = new File(include);
             File destFile = new File(repo.getDataDir() + File.separatorChar + sourceFile.getAbsolutePath().substring(sourceFile.getAbsolutePath().indexOf(File.separatorChar) + 1));

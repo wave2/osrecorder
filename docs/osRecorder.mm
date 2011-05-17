@@ -1,0 +1,11 @@
+<map version="0.9.0">
+<!-- To view this file, download free mind mapping software FreeMind from http://freemind.sourceforge.net -->
+<node CREATED="1305577465570" ID="ID_474225505" MODIFIED="1305577568310" TEXT="osRecorder">
+<node CREATED="1305577574601" ID="ID_140963301" MODIFIED="1305577603241" POSITION="right" STYLE="bubble" TEXT="FileSet">
+<node CREATED="1305577607585" ID="ID_1570973729" MODIFIED="1305577670034" STYLE="fork" TEXT="Name"/>
+<node CREATED="1305577613444" ID="ID_369276631" MODIFIED="1305577675174" STYLE="fork" TEXT="Include"/>
+<node CREATED="1305577620834" ID="ID_694906964" MODIFIED="1305577679363" STYLE="fork" TEXT="Exclude"/>
+</node>
+<node CREATED="1305577650066" ID="ID_1527023846" MODIFIED="1305577657288" POSITION="left" TEXT="Datadir"/>
+</node>
+</map>

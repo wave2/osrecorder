@@ -3,7 +3,7 @@ osRecorder
 
 When something breaks, the first question you ask is what changed?
 
-Now I know.
+Now you know.
 
 Requirements
 ------------

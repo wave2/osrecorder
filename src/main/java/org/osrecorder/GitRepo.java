@@ -33,10 +33,14 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
+import org.eclipse.jgit.errors.CorruptObjectException;
 import static org.eclipse.jgit.lib.Constants.HEAD;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
@@ -47,10 +51,13 @@ import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.api.errors.NoMessageException;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.errors.UnmergedPathException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RepositoryBuilder;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -86,16 +93,59 @@ public class GitRepo implements org.osrecorder.Repository {
         this.dataDir = path;
     }
 
+     /**
+     * List files in repository
+     *
+     * @return List of files in repository
+     */
     @Override
-    /**
+    public ArrayList<String> listFiles() {
+        ArrayList<String> files = new ArrayList<String>();
+        try {
+            DirCache cache = repo.getRepository().readDirCache();
+            for (int i = 0; i < cache.getEntryCount(); i++) {
+                final DirCacheEntry ent = cache.getEntry(i);
+                files.add(ent.getPathString().replace('/', File.separatorChar));
+            }
+        }
+        catch (CorruptObjectException ex) {
+            Logger.getLogger(GitRepo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        catch (IOException ex) {
+            Logger.getLogger(GitRepo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return files;
+    }
+
+     /**
      * Add file to repository
      *
      * @param  path Path to file
      */
+    @Override
     public boolean processFile(String path) {
         System.out.println(path);
         try {
             repo.add().addFilepattern(path.replace(File.separatorChar, '/')).call();
+        }
+        catch (NoFilepatternException nfe) {
+            System.err.println(nfe.getMessage());
+
+        }
+        return true;
+    }
+    
+         /**
+     * Remove file from repository
+     *
+     * @param  path Path to file
+     */
+    @Override
+    public boolean removeFile(String path) {
+        System.out.println(path);
+        try {
+            repo.rm().addFilepattern(path.replace(File.separatorChar, '/')).call();
         }
         catch (NoFilepatternException nfe) {
             System.err.println(nfe.getMessage());

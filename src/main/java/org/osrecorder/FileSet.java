@@ -98,30 +98,30 @@ public class FileSet {
      */
     public ArrayList<String> processExcludes(String[] excludes) {
         ArrayList<String> expandedExcludes = new ArrayList<String>();
-        if (excludes != null){
-        for (String exclude : excludes) {
-            File excludePath = new File(exclude);
-            if (excludePath.getName().contains("*")) {
-                //Process wildcards
-                File excludeGlob = new File(excludePath.getParent());
-                for (File file : excludeGlob.listFiles()) {
-                    if (file.isFile()) {
+        if (excludes != null) {
+            for (String exclude : excludes) {
+                File excludePath = new File(exclude);
+                if (excludePath.getName().contains("*")) {
+                    //Process wildcards
+                    File excludeGlob = new File(excludePath.getParent());
+                    for (File file : excludeGlob.listFiles()) {
+                        if (file.isFile()) {
+                            //Only store unique files
+                            if (!expandedExcludes.contains(file.getAbsolutePath())) {
+                                expandedExcludes.add(file.getAbsolutePath());
+                            }
+                        }
+                    }
+                } else {
+                    //Process only files
+                    if (excludePath.isFile()) {
                         //Only store unique files
-                        if (!expandedExcludes.contains(file.getAbsolutePath())) {
-                            expandedExcludes.add(file.getAbsolutePath());
+                        if (!expandedExcludes.contains(excludePath.getAbsolutePath())) {
+                            expandedExcludes.add(excludePath.getAbsolutePath());
                         }
                     }
                 }
-            } else {
-                //Process only files
-                if (excludePath.isFile()) {
-                    //Only store unique files
-                    if (!expandedExcludes.contains(excludePath.getAbsolutePath())) {
-                        expandedExcludes.add(excludePath.getAbsolutePath());
-                    }
-                }
             }
-        }
         }
         return expandedExcludes;
     }
@@ -136,12 +136,14 @@ public class FileSet {
         boolean filesModified = false;
         ArrayList<String> includes = processIncludes(fileSetConf.getInclude());
         ArrayList<String> excludes = processExcludes(fileSetConf.getExclude());
+        ArrayList<String> repoFiles = repo.listFiles();
         includes.removeAll(excludes);
         for (String include : includes) {
             System.out.println(include);
             //Create file objects for source and destination
             File sourceFile = new File(include);
-            File destFile = new File(repo.getDataDir() + File.separatorChar + sourceFile.getAbsolutePath().substring(sourceFile.getAbsolutePath().indexOf(File.separatorChar) + 1));
+            String cleanPath = sourceFile.getAbsolutePath().substring(sourceFile.getAbsolutePath().indexOf(File.separatorChar) + 1);
+            File destFile = new File(repo.getDataDir() + File.separatorChar + cleanPath);
             //Create repo folders if not exisiting already
             File destFolder = new File(destFile.getParent());
             if (!destFolder.isDirectory() && !destFolder.exists()) {
@@ -149,6 +151,8 @@ public class FileSet {
                     System.out.println("Failed to create repository folder: " + destFile.getParent());
                 }
             }
+            //Remove file from repoFiles
+            repoFiles.remove(cleanPath);
             //Check if source file modification newer than repo copy
             if (sourceFile.lastModified() > destFile.lastModified()) {
                 filesModified = true;
@@ -164,6 +168,15 @@ public class FileSet {
                 }
                 repo.processFile(sourceFile.getAbsolutePath().substring(sourceFile.getAbsolutePath().indexOf(File.separatorChar) + 1));
             }
+        }
+        //Delete files from repo
+        if (!repoFiles.isEmpty()) {
+            for (String repoFile : repoFiles) {
+                repo.removeFile(repoFile);
+                File deleteFile = new File(repo.getDataDir() + File.separatorChar + repoFile);
+                deleteFile.delete();
+            }
+            filesModified = true;
         }
         if (filesModified) {
             result = repo.getDiffs();

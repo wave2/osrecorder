@@ -29,6 +29,8 @@
  */
 package org.osrecorder;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author Alan Snelson
@@ -38,8 +40,12 @@ public interface Repository {
     public String getDataDir();
 
     public boolean processFile(String path);
+    
+    public boolean removeFile(String path);
 
     public boolean save();
 
     public String getDiffs();
+    
+    public ArrayList<String> listFiles();
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2008-2011 Wave2 Limited. All rights reserved.
+ * Copyright (c) 2008-2012 Wave2 Limited. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,18 +39,20 @@ import javax.mail.internet.*;
 import org.osrecorder.config.osRecorderConfig;
 import org.osrecorder.config.NotificationMethodConfig;
 
-import org.yaml.snakeyaml.JavaBeanLoader;
-
 import org.incava.util.diff.*;
-
-import org.kohsuke.args4j.*;
 
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+
+import org.kohsuke.args4j.*;
+
+import org.yaml.snakeyaml.Yaml;
+
 import org.osrecorder.config.FileSetConfig;
+
 
 /**
  *
@@ -144,7 +146,7 @@ public class osRecorder {
      * @param  username XMPP server username
      * @param  password XMPP server password
      * @param  hostname XMPP Server
-     * @param  recipient Recipients
+     * @param  recipients Recipients
      * @param  text Notification message
      */
     private void sendXMPP(String username, String password, String hostname, List<String> recipients, String text) {
@@ -301,8 +303,8 @@ public class osRecorder {
 
         try {
             //Parse YAML config file
-            JavaBeanLoader<osRecorderConfig> beanLoader = new JavaBeanLoader<osRecorderConfig>(osRecorderConfig.class);
-            osRecorderConfig config = beanLoader.load(new FileReader(osRecorderConfig.replace('/', File.separatorChar)));
+            Yaml yaml = new Yaml();
+            osRecorderConfig config = yaml.loadAs ( new FileReader(osRecorderConfig.replace('/', File.separatorChar)), osRecorderConfig.class );
             if (!config.checkConfig()) {
                 System.err.println(config.configError);
                 System.exit(1);

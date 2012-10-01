@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2008-2011 Wave2 Limited. All rights reserved.
+ * Copyright (c) 2008-2012 Wave2 Limited. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,18 +38,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.eclipse.jgit.api.errors.JGitInternalException;
+
+import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.CorruptObjectException;
+
 import static org.eclipse.jgit.lib.Constants.HEAD;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
-import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
-import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
-import org.eclipse.jgit.api.errors.NoFilepatternException;
 
-import org.eclipse.jgit.api.errors.NoHeadException;
-import org.eclipse.jgit.api.errors.NoMessageException;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
@@ -65,7 +63,6 @@ import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 
 /**
- *
  * @author Alan Snelson
  */
 public class GitRepo implements org.osrecorder.Repository {
@@ -76,7 +73,7 @@ public class GitRepo implements org.osrecorder.Repository {
     /**
      * Constructor
      *
-     * @param  path Path to repository
+     * @param path Path to repository
      */
     GitRepo(String path) {
         initRepo(path);
@@ -88,12 +85,17 @@ public class GitRepo implements org.osrecorder.Repository {
         if (path != null) {
             command.setDirectory(new File(path));
         }
-        Repository repository = command.call().getRepository();
+        Repository repository = null;
+        try {
+            repository = command.call().getRepository();
+        } catch (GitAPIException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
         this.repo = new Git(repository);
         this.dataDir = path;
     }
 
-     /**
+    /**
      * List files in repository
      *
      * @return List of files in repository
@@ -107,50 +109,46 @@ public class GitRepo implements org.osrecorder.Repository {
                 final DirCacheEntry ent = cache.getEntry(i);
                 files.add(ent.getPathString().replace('/', File.separatorChar));
             }
-        }
-        catch (CorruptObjectException ex) {
+        } catch (CorruptObjectException ex) {
             Logger.getLogger(GitRepo.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(GitRepo.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return files;
     }
 
-     /**
+    /**
      * Add file to repository
      *
-     * @param  path Path to file
+     * @param path Path to file
      */
     @Override
     public boolean processFile(String path) {
         System.out.println(path);
         try {
             repo.add().addFilepattern(path.replace(File.separatorChar, '/')).call();
+        } catch (GitAPIException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        catch (NoFilepatternException nfe) {
-            System.err.println(nfe.getMessage());
 
-        }
         return true;
     }
-    
-         /**
+
+    /**
      * Remove file from repository
      *
-     * @param  path Path to file
+     * @param path Path to file
      */
     @Override
     public boolean removeFile(String path) {
         System.out.println(path);
         try {
             repo.rm().addFilepattern(path.replace(File.separatorChar, '/')).call();
+        } catch (GitAPIException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        catch (NoFilepatternException nfe) {
-            System.err.println(nfe.getMessage());
 
-        }
         return true;
     }
 
@@ -163,25 +161,18 @@ public class GitRepo implements org.osrecorder.Repository {
     public boolean save() {
         try {
             repo.commit().setMessage("ttt").call();
-        }
-        catch (NoHeadException nhe) {
+        } catch (NoHeadException nhe) {
             System.err.println(nhe.getMessage());
-        }
-        catch (NoMessageException nme) {
+        } catch (NoMessageException nme) {
             System.err.println(nme.getMessage());
-
-        }
-        catch (UnmergedPathException upe) {
-            System.err.println(upe.getMessage());
-
-        }
-        catch (ConcurrentRefUpdateException crue) {
+        } catch (ConcurrentRefUpdateException crue) {
             System.err.println(crue.getMessage());
-
-        }
-        catch (WrongRepositoryStateException wrse) {
+        } catch (WrongRepositoryStateException wrse) {
             System.err.println(wrse.getMessage());
-
+        } catch (UnmergedPathsException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (GitAPIException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         return true;
     }
@@ -206,8 +197,7 @@ public class GitRepo implements org.osrecorder.Repository {
                 ObjectReader reader = repo.getRepository().newObjectReader();
                 try {
                     p.reset(reader, head);
-                }
-                finally {
+                } finally {
                     reader.release();
                 }
                 oldTree = p;
@@ -217,11 +207,9 @@ public class GitRepo implements org.osrecorder.Repository {
             }
 
             //End Test
-        }
-        catch (AmbiguousObjectException ex) {
+        } catch (AmbiguousObjectException ex) {
             Logger.getLogger(GitRepo.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(GitRepo.class.getName()).log(Level.SEVERE, null, ex);
         }
         return diffOutput.toString();

@@ -11,6 +11,32 @@ Requirements
 * Java 1.6 (or above)
 * Maven
 
+Usage
+-----
+
+1. Create a config file that defines the files / folders you wish to monitor for changes:
+
+    datadir: c:\myOSRecorderDB
+    notification:
+    - method: smtp
+      server: smtp.mymailserver.org
+      port: 25
+      sender: osRecorder@mymailserver.org
+      recipients: [me@mymailserver.org]
+    fileset:
+    - name: MyWatchlist
+      include:
+      - C:\myfiles\*
+      exclude:
+      - C:\myfiles\TOPSECRET\*
+
+
+2. Run OSRecorder once to ensure your config wis valid and the datadir is created successfully:
+
+    $  java -jar OSRecorder.jar -v -c myconfig.yml
+
+3. Schedule OSRecorder to run at your chosen interval (not every 5 seconds silly!).
+
 Contributing
 ------------
 

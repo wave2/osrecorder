@@ -14,7 +14,7 @@ Requirements
 Usage
 -----
 
-1. Create a config file that defines the files / folders you wish to monitor for changes:
+1\. Create a config file that defines the files / folders you wish to monitor for changes:
 
     datadir: c:\myOSRecorderDB
     notification:
@@ -31,11 +31,11 @@ Usage
       - C:\myfiles\TOPSECRET\*
 
 
-2. Run OSRecorder once to ensure your config wis valid and the datadir is created successfully:
+2\. Run OSRecorder once to ensure your config wis valid and the datadir is created successfully:
 
     $  java -jar OSRecorder.jar -v -c myconfig.yml
 
-3. Schedule OSRecorder to run at your chosen interval (not every 5 seconds silly!).
+3\. Schedule OSRecorder to run at your chosen interval (not every 5 seconds silly!).
 
 Contributing
 ------------

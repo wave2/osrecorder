@@ -31,7 +31,7 @@ Usage
       - C:\myfiles\TOPSECRET\*
 
 
-2\. Run OSRecorder once to ensure your config wis valid and the datadir is created successfully:
+2\. Run OSRecorder once to ensure your config was valid and the datadir (Basically OSRecorder's git repo) is created successfully:
 
     $  java -jar OSRecorder.jar -v -c myconfig.yml
 

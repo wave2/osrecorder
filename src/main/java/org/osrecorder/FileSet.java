@@ -35,10 +35,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+
 import org.osrecorder.config.FileSetConfig;
 
 /**
- *
  * @author alan
  */
 public class FileSet {
@@ -48,7 +48,7 @@ public class FileSet {
     /**
      * Constructor
      *
-     * @param   repo    Change repository
+     * @param repo Change repository
      */
     FileSet(Repository repo) {
         this.repo = repo;
@@ -57,8 +57,7 @@ public class FileSet {
     /**
      * Check include entries and return clean list
      *
-     * @param  includes Array of include entries
-     * 
+     * @param includes Array of include entries
      * @return Clean list of includes
      */
     public ArrayList<String> processIncludes(String[] includes) {
@@ -68,13 +67,17 @@ public class FileSet {
             if (includePath.getName().contains("*")) {
                 //Process wildcards
                 File includeGlob = new File(includePath.getParent());
-                for (File file : includeGlob.listFiles()) {
-                    if (file.isFile()) {
-                        //Only store unique files
-                        if (!expandedIncludes.contains(file.getAbsolutePath())) {
-                            expandedIncludes.add(file.getAbsolutePath());
+                try {
+                    for (File file : includeGlob.listFiles()) {
+                        if (file.isFile()) {
+                            //Only store unique files
+                            if (!expandedIncludes.contains(file.getAbsolutePath())) {
+                                expandedIncludes.add(file.getAbsolutePath());
+                            }
                         }
                     }
+                } catch (NullPointerException ne) {
+                    System.err.println("I was unable to process include: " + includePath);
                 }
             } else {
                 //Process only files
@@ -92,8 +95,7 @@ public class FileSet {
     /**
      * Check exclude entries and return clean list
      *
-     * @param  excludes Array of exclude entries
-     * 
+     * @param excludes Array of exclude entries
      * @return Clean list of excludes
      */
     public ArrayList<String> processExcludes(String[] excludes) {
@@ -103,14 +105,18 @@ public class FileSet {
                 File excludePath = new File(exclude);
                 if (excludePath.getName().contains("*")) {
                     //Process wildcards
-                    File excludeGlob = new File(excludePath.getParent());
-                    for (File file : excludeGlob.listFiles()) {
-                        if (file.isFile()) {
-                            //Only store unique files
-                            if (!expandedExcludes.contains(file.getAbsolutePath())) {
-                                expandedExcludes.add(file.getAbsolutePath());
+                    try {
+                        File excludeGlob = new File(excludePath.getParent());
+                        for (File file : excludeGlob.listFiles()) {
+                            if (file.isFile()) {
+                                //Only store unique files
+                                if (!expandedExcludes.contains(file.getAbsolutePath())) {
+                                    expandedExcludes.add(file.getAbsolutePath());
+                                }
                             }
                         }
+                    } catch (NullPointerException ne) {
+                        System.err.println("I was unable to process exclude: " + excludePath);
                     }
                 } else {
                     //Process only files
@@ -129,7 +135,7 @@ public class FileSet {
     /**
      * Check for modifications and store / report changes
      *
-     * @param   fileSetConfig   FileSet configuration
+     * @param fileSetConf FileSet configuration
      */
     public String processFileSet(FileSetConfig fileSetConf) {
         String result = "";
@@ -162,8 +168,7 @@ public class FileSet {
                     FileChannel outChannel = new FileOutputStream(destFile.getAbsolutePath()).getChannel();
                     inChannel.transferTo(0, inChannel.size(),
                             outChannel);
-                }
-                catch (IOException ioe) {
+                } catch (IOException ioe) {
                     System.err.println(ioe.getMessage());
                 }
                 repo.processFile(sourceFile.getAbsolutePath().substring(sourceFile.getAbsolutePath().indexOf(File.separatorChar) + 1));

@@ -129,7 +129,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.31</version>
+            <version>1.32</version>
         </dependency>
         <dependency>
             <groupId>args4j</groupId>
